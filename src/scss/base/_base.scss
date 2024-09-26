@@ -1,4 +1,5 @@
 @use "config/variables" as var;
+@use "config/mixins" as mix;
 
 html {
   font-size: 62.5%;
@@ -15,6 +16,19 @@ body {
   font-size: 1.6rem;
   font-family: var.$primary-font;
   font-weight: 300;
+  color: var.$secondary-color;
+  background-image: linear-gradient(
+    to bottom,
+    var.$white 55%,
+    var.$primary-color 55%
+  );
+  @include mix.tablet {
+    background-image: linear-gradient(
+      to right,
+      var.$white 50%,
+      var.$primary-color 50%
+    );
+  }
 }
 
 img {

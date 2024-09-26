@@ -1,0 +1,31 @@
+@use "config/variables" as var;
+@use "config/mixins" as mix;
+
+.form {
+  display: grid;
+  gap: 1rem;
+
+  &__field {
+    display: flex;
+    flex-direction: column;
+  }
+
+  &__label {
+    margin: 0 0 0.5rem 1rem;
+    font-weight: 500;
+    font-size: 1.6rem;
+  }
+
+  &__input {
+    outline: none;
+    border: 0.1rem solid var.$secondary-color;
+    border-radius: 1rem;
+    padding: 0.5rem;
+    font-size: 1.8rem;
+    font-weight: 400;
+  }
+
+  &__btn {
+    @include mix.button(var.$secondary-color, var.$white);
+  }
+}

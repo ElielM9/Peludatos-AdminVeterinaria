@@ -1,0 +1,19 @@
+@use "config/variables" as var;
+
+.patient-management {
+  padding: 1rem 0;
+  
+  &__heading {
+    color: var.$white;
+    font-weight: 700;
+  }
+
+  &__description {
+    font-weight: 500;
+    color: var.$white;
+
+    &--highlight {
+      color: var.$secondary-color;
+    }
+  }
+}

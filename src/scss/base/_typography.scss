@@ -20,15 +20,16 @@ h3 {
 }
 
 [class$="__heading"] {
-  margin: 2rem 0;
+  margin: 0;
 }
 
 a {
   text-decoration: none;
-  color: var.$black;
+  color: var.$secondary-color;
 }
 
 p {
   font-size: 2rem;
   line-height: 1.5;
+  margin: .5rem 0 1.5rem;
 }

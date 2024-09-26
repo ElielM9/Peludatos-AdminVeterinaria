@@ -41,6 +41,12 @@
   gap: $espaciado;
 }
 
+@mixin grid-rows($rows, $espaciado) {
+  display: grid;
+  grid-template-rows: repeat($rows, 1fr);
+  gap: $espaciado;
+}
+
 // Botones
 @mixin button($bgColor, $textColor) {
   margin-top: 2rem;
@@ -59,7 +65,7 @@
   }
 
   @include hover(background-color, 0.3s, ease-in-out) {
-    background-color: darken($bgColor, 10%);
+    background-color: lighten($bgColor, 15%);
     cursor: pointer;
   }
 }
