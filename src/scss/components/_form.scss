@@ -17,12 +17,23 @@
   }
 
   &__input {
+    width: 100%;
     outline: none;
     border: 0.1rem solid var.$secondary-color;
     border-radius: 1rem;
     padding: 0.5rem;
     font-size: 1.8rem;
     font-weight: 400;
+    transition: border-color 0.2s ease-in-out;
+
+    &:focus {
+      border-color: var.$primary-color;
+    }
+
+    &--textarea {
+      resize: vertical;
+      min-height: 10rem;
+    }
   }
 
   &__btn {

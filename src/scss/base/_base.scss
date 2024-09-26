@@ -38,6 +38,12 @@ img {
   height: auto;
 }
 
+ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
 [class$="__container"] {
   width: 95%;
   max-width: 120rem;

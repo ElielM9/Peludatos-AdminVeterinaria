@@ -59,7 +59,7 @@
                 class="form__input"
                 type="text"
                 id="input_owner_name"
-                placeholder="Nombre del Propietario"
+                placeholder="Nombre del propietario"
                 name="owner_name"
               />
             </div>
@@ -96,7 +96,7 @@
                 class="form__input form__input--textarea"
                 id="input_symptoms"
                 name="symptoms"
-                placeholder="Síntomas del Paciente"
+                placeholder="Síntomas del paciente"
               ></textarea>
             </div>
 
@@ -112,7 +112,43 @@
             >
           </p>
           <div id="citas">
-            <p class="text-xl mt-5 mb-10 text-center">No Hay Pacientes</p>
+            <ul class="appointment-list" id="appointment-list">
+              <!-- Citas cargadas dinámicamente -->
+              <li class="appointment-list__item">
+                <div class="appointment-list__item-info">
+                  <p class="appointment-list__item-detail">
+                    Mascota:
+                    <span class="appointment-list__item-detail--value">
+                      Bottas
+                    </span>
+                  </p>
+                  <p class="appointment-list__item-detail">
+                    Propietario:
+                    <span class="appointment-list__item-detail--value">
+                      Janeth
+                    </span>
+                  </p>
+                  <p class="appointment-list__item-detail">
+                    Correo:
+                    <span class="appointment-list__item-detail--value">
+                      janeth@example.com
+                    </span>
+                  </p>
+                  <p class="appointment-list__item-detail">
+                    Fecha de alta:
+                    <span class="appointment-list__item-detail--value">
+                      2022-01-01
+                    </span>
+                  </p>
+                </div>
+                <p class="appointment-list__item-detail">
+                  Síntomas:
+                  <span class="appointment-list__item-detail--value">
+                    Dolor de cabeza, fiebre, nausea
+                  </span>
+                </p>
+              </li>
+            </ul>
           </div>
         </section>
       </div>
