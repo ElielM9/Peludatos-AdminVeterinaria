@@ -74,7 +74,7 @@ export class AdminAppointments {
       }
     };
 
-    objectStore.openCursor().onsuccess = function (e) {
+    objectStore.openCursor().onsuccess = (e) => {
       const cursor = e.target.result;
 
       if (cursor) {
