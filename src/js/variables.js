@@ -14,4 +14,6 @@ const appointmentObj = {
   symptoms: ``,
 };
 
-export { editing, appointmentObj };
+let dataBase; 
+
+export { editing, appointmentObj, dataBase };

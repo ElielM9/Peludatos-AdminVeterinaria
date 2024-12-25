@@ -1,6 +1,6 @@
 /* Importaciones */
 import { appointmentList } from "../selectors.js";
-import { loadEdition } from "../functions.js";
+import { loadEdition, dataBase } from "../functions.js";
 
 export class AdminAppointments {
   constructor() {
@@ -28,10 +28,26 @@ export class AdminAppointments {
 
   // Métodos para eliminar una cita del array de citas
   deleteAppointment(id) {
-    this.appointments = this.appointments.filter(
-      (appointment) => appointment.id !== id
-    );
-    this.showAppointments();
+    const transaction = dataBase.transaction([`appointments`], `readwrite`);
+    const objectStore = transaction.objectStore(`appointments`);
+    objectStore.delete(id);
+
+    // Eliminar la cita del objectStore
+    transaction.oncomplete = () => {
+      console.log(`Cita eliminada correctamente`);
+
+      // Actualizar el array de citas sin la cita eliminada
+      this.appointments = this.appointments.filter(
+        (appointment) => appointment.id !== id
+      );
+
+      // Mostrar las citas actualizadas
+      this.showAppointments();
+    };
+
+    transaction.onerror = () => {
+      console.error(`Error al eliminar la cita`);
+    };
   }
 
   // Métodos para mostrar las citas en la lista de citas
@@ -41,90 +57,113 @@ export class AdminAppointments {
       appointmentList.removeChild(appointmentList.firstChild);
     }
 
-    // Comprobar si ha citas existentes
-    if (this.appointments.length === 0) {
-      const noAppointments = document.createElement(`P`);
-      noAppointments.classList.add(`no-appointments`);
-      noAppointments.textContent = `No hay citas agendadas`;
-      appointmentList.appendChild(noAppointments);
+    const objectStore = dataBase
+      .transaction(`appointments`)
+      .objectStore(`appointments`);
 
-      return;
-    }
+    // Comprobar si hay citas existentes
 
-    // Generar las citas
-    this.appointments.forEach((appointment) => {
-      const appointmentItem = document.createElement(`LI`);
-      appointmentItem.classList.add(`appointment-item`);
-      appointmentItem.innerHTML = `
-             <div class="appointment-item__info">
-              <p class="appointment-item__detail">
-               Mascota:
-               <span class="appointment-item__detail--value">
-                ${appointment.patient_name}
-               </span>
-              </p>
-              <p class="appointment-item__detail">
-               Propietario:
-               <span class="appointment-item__detail--value">
-                ${appointment.owner_name}
-               </span>
-              </p>
-              <p class="appointment-item__detail">
-               Correo:
-               <span class="appointment-item__detail--value">
-                ${appointment.contact_email}
-               </span>
-              </p>
-              <p class="appointment-item__detail">
-               Fecha de alta:
-               <span class="appointment-item__detail--value">
-                ${appointment.registration_date}
-               </span>
-              </p>
-             </div>
-             <p class="appointment-item__detail"> 
-             Síntomas:
-              <span class="appointment-item__detail--value">
-                ${appointment.symptoms}
-              </span>
-             </p>
-        `;
+    const total = objectStore.count();
+    total.onsuccess = () => {
+      if (total.result === 0) {
+        const noAppointmentsMessage = document.createElement(`P`);
+        noAppointmentsMessage.textContent = `No hay citas registradas`;
+        appointmentList.appendChild(noAppointmentsMessage);
 
-      // Agregar botones de editar y borrar
-      const btnEdit = document.createElement(`BUTTON`);
-      btnEdit.textContent = `Editar`;
-      btnEdit.classList.add(
-        `appointment-item__btn`,
-        `appointment-item__btn--edit`
-      );
+        return;
+      }
+    };
 
-      // Clonar el objeto de cita
-      const cloneAppointment = structuredClone(appointment);
+    objectStore.openCursor().onsuccess = function (e) {
+      const cursor = e.target.result;
 
-      // Asignar evento para editar al dar click
-      btnEdit.onclick = () => loadEdition(cloneAppointment);
+      if (cursor) {
+        const {
+          patient_name,
+          owner_name,
+          contact_email,
+          registration_date,
+          symptoms,
+          id,
+        } = cursor.value;
 
-      const btnDelete = document.createElement(`BUTTON`);
-      btnDelete.textContent = `Borrar`;
-      btnDelete.classList.add(
-        `appointment-item__btn`,
-        `appointment-item__btn--delete`
-      );
+        const appointmentItem = document.createElement(`LI`);
+        appointmentItem.dataset.id = id;
+        appointmentItem.classList.add(`appointment-item`);
+        appointmentItem.innerHTML = `
+               <div class="appointment-item__info">
+                <p class="appointment-item__detail">
+                 Mascota:
+                 <span class="appointment-item__detail--value">
+                  ${patient_name}
+                 </span>
+                </p>
+                <p class="appointment-item__detail">
+                 Propietario:
+                 <span class="appointment-item__detail--value">
+                  ${owner_name}
+                 </span>
+                </p>
+                <p class="appointment-item__detail">
+                 Correo:
+                 <span class="appointment-item__detail--value">
+                  ${contact_email}
+                 </span>
+                </p>
+                <p class="appointment-item__detail">
+                 Fecha de alta:
+                 <span class="appointment-item__detail--value">
+                  ${registration_date}
+                 </span>
+                </p>
+               </div>
+               <p class="appointment-item__detail"> 
+               Síntomas:
+                <span class="appointment-item__detail--value">
+                  ${symptoms}
+                </span>
+               </p>
+          `;
 
-      // Asignar evento para borrar al dar click
-      btnDelete.onclick = () => this.deleteAppointment(appointment.id);
+        // Agregar botones de editar y borrar
+        const btnEdit = document.createElement(`BUTTON`);
+        btnEdit.textContent = `Editar`;
+        btnEdit.classList.add(
+          `appointment-item__btn`,
+          `appointment-item__btn--edit`
+        );
 
-      // Agregar contenedor de botones
-      const btnContainer = document.createElement(`DIV`);
-      btnContainer.classList.add(`appointment-item__btn-container`);
-      btnContainer.appendChild(btnEdit);
-      btnContainer.appendChild(btnDelete);
+        // Clonar el objeto para que no se modifique en el original
+        const cloneAppointment = structuredClone(cursor.value);
 
-      // Agregar el botón de editar y borrar al item de la lista
-      appointmentItem.appendChild(btnContainer);
+        // Asignar evento para editar al dar click
+        btnEdit.onclick = () => loadEdition(cloneAppointment);
 
-      // Agregar la cita a la lista
-      appointmentList.appendChild(appointmentItem);
-    });
+        const btnDelete = document.createElement(`BUTTON`);
+        btnDelete.textContent = `Borrar`;
+        btnDelete.classList.add(
+          `appointment-item__btn`,
+          `appointment-item__btn--delete`
+        );
+
+        // Asignar evento para borrar al dar click
+        btnDelete.onclick = () => this.deleteAppointment(id);
+
+        // Agregar contenedor de botones
+        const btnContainer = document.createElement(`DIV`);
+        btnContainer.classList.add(`appointment-item__btn-container`);
+        btnContainer.appendChild(btnEdit);
+        btnContainer.appendChild(btnDelete);
+
+        // Agregar el botón de editar y borrar al item de la lista
+        appointmentItem.appendChild(btnContainer);
+
+        // Agregar la cita a la lista
+        appointmentList.appendChild(appointmentItem);
+
+        // Avanzar al siguiente cursor
+        cursor.continue();
+      }
+    };
   }
 }

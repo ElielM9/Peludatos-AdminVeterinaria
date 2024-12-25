@@ -7,13 +7,14 @@ import {
   inputSymptoms,
   formAppointment,
 } from "./selectors.js";
-import { appointmentData, sendAppointment } from "./functions.js";
+import { appointmentData, sendAppointment, createDB } from "./functions.js";
 
 /* Eventos */
 document.addEventListener(`DOMContentLoaded`, startApp);
 
 function startApp() {
   events();
+  createDB();
 }
 
 function events() {

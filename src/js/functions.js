@@ -37,24 +37,50 @@ export function sendAppointment(e) {
     return;
   }
 
-  // Editar o agregar la cita según sea la acción
+  // Si editing.value es verdadero, entra en modo edición, caso contrario, agrega la cita normnalmente
   if (editing.value) {
-    // Editar la cita en el array de citas y mostrar un mensaje de éxito
-    appointments.editAppointment({ ...appointmentObj });
+    const transaction = dataBase.transaction([`appointments`], `readwrite`);
+    const objectStore = transaction.objectStore(`appointments`);
 
-    new Notification({
-      message: `Guardado correctamente`,
-      type: `success`,
-    });
+    // Actualizar la cita en el objectStore
+    const request = objectStore.put(appointmentObj);
+
+    transaction.oncomplete = () => {
+      // Editar la cita en el array de citas
+      appointments.editAppointment({ ...appointmentObj });
+
+      // Mostrar un mensaje de éxito
+      new Notification({
+        message: `Cita editada correctamente`,
+        type: `success`,
+      });
+    };
   } else {
-    // Enviar los datos al administrador
-    appointments.addAppointment({ ...appointmentObj });
+    // Guardar los datos en IndexedDB para persistencia
+    const transaction = dataBase.transaction([`appointments`], `readwrite`);
+    const objectStore = transaction.objectStore(`appointments`);
 
-    // Mostrar un mensaje de éxito
-    new Notification({
-      message: `Cita agregada correctamente`,
-      type: `success`,
-    });
+    // Agregar la cita al objectStore
+    const request = objectStore.add(appointmentObj);
+
+    transaction.oncomplete = () => {
+      // Enviar los datos al administrador
+      appointments.addAppointment({ ...appointmentObj });
+
+      // Mostrar un mensaje de éxito
+      new Notification({
+        message: `Cita agregada correctamente`,
+        type: `success`,
+      });
+    };
+
+    transaction.onerror = () => {
+      // Mostrar un mensaje de error en caso de un error en IndexedDB
+      new Notification({
+        message: `Error al agregar la cita`,
+        type: `error`,
+      });
+    };
   }
 
   // Resetear el formulario y el objeto
@@ -95,4 +121,52 @@ export function loadEdition(appointment) {
   editing.value = true;
 
   formBtn.value = `Guardar cambios`;
+}
+
+/* Base de datos */
+export let dataBase;
+export function createDB() {
+  // Crear la base de datos en IndexedDB
+  const createDB = window.indexedDB.open(`appointments`, 1.0);
+
+  // Si existen errores
+  createDB.onerror = () => {
+    console.error(`Error al crear la base de datos`);
+  };
+
+  // Si sale bien
+  createDB.onsuccess = () => {
+    // console.log(`Base de datos creada exitosamente`);
+
+    // Obtener la base de datos
+    dataBase = createDB.result;
+
+    // Cargar las citas desde IndexedDB
+    appointments.showAppointments();
+  };
+
+  // Definir el schema
+  createDB.onupgradeneeded = (e) => {
+    const db = e.target.result;
+
+    // Crear el objeto store para las citas en IndexedDB
+    const objectStore = db.createObjectStore(`appointments`, {
+      keyPath: `id`,
+      autoIncrement: true,
+    });
+
+    // Crear las columnas
+    objectStore.createIndex(`patient_name`, `patient_name`, { unique: false });
+    objectStore.createIndex(`owner_name`, `owner_name`, { unique: false });
+    objectStore.createIndex(`contact_email`, `contact_email`, {
+      unique: false,
+    });
+    objectStore.createIndex(`registration_date`, `registration_date`, {
+      unique: false,
+    });
+    objectStore.createIndex(`symptoms`, `symptoms`, { unique: false });
+    objectStore.createIndex(`id`, `id`, { unique: true });
+
+    // console.log(`Schema de la base de datos creado exitosamente`);
+  };
 }
